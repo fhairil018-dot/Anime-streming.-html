@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AniStream – Nonton Anime Gratis</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #12121c;
+    --bg3: #1a1a2e;
+    --accent: #e63946;
+    --accent2: #ff6b6b;
+    --gold: #ffd60a;
+    --text: #f1f1f1;
+    --muted: #8888aa;
+    --border: rgba(255,255,255,0.08);
+    --card-hover: rgba(230,57,70,0.12);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 2rem;
+    height: 64px;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 2rem;
+    color: var(--accent);
+    letter-spacing: 2px;
+    cursor: pointer;
+  }
+  .logo span { color: var(--text); }
+
+  .nav-links {
+    display: flex; gap: 2rem; list-style: none;
+  }
+  .nav-links a {
+    color: var(--muted); text-decoration: none; font-size: 0.9rem;
+    font-weight: 500; transition: color 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--text); }
+
+  .nav-right { display: flex; align-items: center; gap: 1rem; }
+
+  .search-bar {
+    display: flex; align-items: center;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 8px; padding: 0.45rem 1rem; gap: 0.5rem;
+    transition: border-color 0.2s;
+  }
+  .search-bar:focus-within { border-color: var(--accent); }
+  .search-bar input {
+    background: none; border: none; outline: none;
+    color: var(--text); font-size: 0.85rem; width: 180px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .search-bar input::placeholder { color: var(--muted); }
+  .search-icon { color: var(--muted); font-size: 1rem; }
+
+  .btn-login {
+    background: var(--accent); color: #fff; border: none; cursor: pointer;
+    padding: 0.5rem 1.2rem; border-radius: 8px; font-size: 0.85rem;
+    font-weight: 600; font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-login:hover { background: var(--accent2); transform: translateY(-1px); }
+
+  /* HERO */
+  .hero {
+    margin-top: 64px; position: relative; overflow: hidden;
+    height: 540px; display: flex; align-items: flex-end;
+  }
+
+  .hero-slides { position: absolute; inset: 0; }
+  .hero-slide {
+    position: absolute; inset: 0; opacity: 0; transition: opacity 0.8s;
+  }
+  .hero-slide.active { opacity: 1; }
+  .hero-slide img {
+    width: 100%; height: 100%; object-fit: cover; object-position: center top;
+    filter: brightness(0.4);
+  }
+  .hero-gradient {
+    position: absolute; inset: 0;
+    background: linear-gradient(to right, rgba(10,10,15,0.95) 35%, transparent 70%),
+                linear-gradient(to top, rgba(10,10,15,1) 10%, transparent 50%);
+  }
+
+  .hero-content {
+    position: relative; z-index: 2; padding: 3rem 3rem;
+    max-width: 520px;
+  }
+
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    background: var(--accent); color: #fff; padding: 0.3rem 0.8rem;
+    border-radius: 4px; font-size: 0.75rem; font-weight: 700;
+    letter-spacing: 0.5px; margin-bottom: 1rem;
+    text-transform: uppercase;
+  }
+
+  .hero-title {
+    font-family: 'Bebas Neue', cursive; font-size: 3.5rem;
+    line-height: 1; color: #fff; margin-bottom: 0.8rem;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+  }
+
+  .hero-meta {
+    display: flex; align-items: center; gap: 1rem;
+    font-size: 0.85rem; color: var(--muted); margin-bottom: 1rem;
+  }
+
+  .hero-rating { color: var(--gold); font-weight: 600; }
+
+  .hero-desc {
+    font-size: 0.9rem; color: rgba(241,241,241,0.75);
+    line-height: 1.7; margin-bottom: 1.5rem;
+    display: -webkit-box; -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical; overflow: hidden;
+  }
+
+  .hero-buttons { display: flex; gap: 1rem; }
+
+  .btn-play {
+    display: flex; align-items: center; gap: 0.6rem;
+    background: var(--accent); color: #fff; border: none; cursor: pointer;
+    padding: 0.75rem 1.8rem; border-radius: 8px;
+    font-size: 0.95rem; font-weight: 700; font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s, transform 0.15s;
+  }
+  .btn-play:hover { background: var(--accent2); transform: translateY(-2px); }
+
+  .btn-info {
+    display: flex; align-items: center; gap: 0.6rem;
+    background: rgba(255,255,255,0.12); color: #fff;
+    border: 1px solid rgba(255,255,255,0.2); cursor: pointer;
+    padding: 0.75rem 1.6rem; border-radius: 8px;
+    font-size: 0.95rem; font-weight: 600; font-family: 'DM Sans', sans-serif;
+    transition: background 0.2s;
+  }
+  .btn-info:hover { background: rgba(255,255,255,0.2); }
+
+  /* HERO DOTS */
+  .hero-dots {
+    position: absolute; bottom: 1.5rem; right: 2rem;
+    display: flex; gap: 0.5rem; z-index: 3;
+  }
+  .dot {
+    width: 28px; height: 4px; border-radius: 2px; cursor: pointer;
+    background: rgba(255,255,255,0.25); transition: background 0.3s, width 0.3s;
+  }
+  .dot.active { background: var(--accent); width: 48px; }
+
+  /* SECTION */
+  .section { padding: 2.5rem 3rem; }
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+  .section-title {
+    font-family: 'Bebas Neue', cursive; font-size: 1.6rem;
+    letter-spacing: 1px; color: var(--text);
+  }
+  .section-title span { color: var(--accent); }
+  .see-all {
+    font-size: 0.8rem; color: var(--muted); text-decoration: none;
+    font-weight: 500; cursor: pointer; transition: color 0.2s;
+  }
+  .see-all:hover { color: var(--accent); }
+
+  /* CARDS GRID */
+  .cards-row {
+    display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .cards-row::-webkit-scrollbar { display: none; }
+
+  .anime-card {
+    flex: 0 0 170px; scroll-snap-align: start;
+    cursor: pointer; position: relative; border-radius: 10px; overflow: hidden;
+    background: var(--bg2); border: 1px solid var(--border);
+    transition: transform 0.25s, border-color 0.25s;
+  }
+  .anime-card:hover { transform: translateY(-6px) scale(1.02); border-color: var(--accent); }
+
+  .anime-card img {
+    width: 100%; height: 240px; object-fit: cover; display: block;
+  }
+
+  .card-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(10,10,15,0.95) 30%, transparent 70%);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .anime-card:hover .card-overlay { opacity: 1; }
+
+  .play-btn {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -60%);
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--accent); display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none;
+  }
+  .anime-card:hover .play-btn { opacity: 1; transform: translate(-50%, -50%); }
+
+  .card-info {
+    padding: 0.75rem; background: var(--bg2);
+  }
+  .card-title {
+    font-size: 0.82rem; font-weight: 600; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 0.25rem;
+  }
+  .card-sub {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 0.72rem; color: var(--muted);
+  }
+  .card-rating { color: var(--gold); font-weight: 600; }
+
+  .card-badge {
+    position: absolute; top: 8px; left: 8px;
+    background: var(--accent); color: #fff;
+    font-size: 0.65rem; font-weight: 700; padding: 2px 7px; border-radius: 4px;
+    text-transform: uppercase;
+  }
+  .card-badge.new { background: #06d6a0; }
+  .card-badge.ep { background: var(--bg3); border: 1px solid var(--border); }
+
+  /* GENRES */
+  .genres-row {
+    display: flex; gap: 0.75rem; flex-wrap: wrap; padding-bottom: 0.5rem;
+  }
+  .genre-chip {
+    background: var(--bg2); border: 1px solid var(--border);
+    color: var(--muted); padding: 0.4rem 1.1rem; border-radius: 999px;
+    font-size: 0.8rem; cursor: pointer; transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .genre-chip:hover, .genre-chip.active {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+  }
+
+  /* TOP SECTION */
+  .top-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;
+  }
+  @media (max-width: 768px) { .top-grid { grid-template-columns: 1fr; } }
+
+  .top-list { display: flex; flex-direction: column; gap: 0.75rem; }
+  .top-item {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 0.75rem; background: var(--bg2); border-radius: 10px;
+    border: 1px solid var(--border); cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .top-item:hover { border-color: var(--accent); background: var(--card-hover); }
+
+  .top-rank {
+    font-family: 'Bebas Neue', cursive; font-size: 1.8rem;
+    color: var(--border); min-width: 36px; text-align: center; line-height: 1;
+  }
+  .top-item:nth-child(1) .top-rank { color: var(--gold); }
+  .top-item:nth-child(2) .top-rank { color: #c0c0c0; }
+  .top-item:nth-child(3) .top-rank { color: #cd7f32; }
+
+  .top-thumb {
+    width: 52px; height: 72px; object-fit: cover; border-radius: 6px; flex-shrink: 0;
+  }
+
+  .top-details { flex: 1; min-width: 0; }
+  .top-title {
+    font-size: 0.87rem; font-weight: 600; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.3rem;
+  }
+  .top-meta { font-size: 0.75rem; color: var(--muted); }
+
+  /* VIDEO PLAYER */
+  .player-modal {
+    display: none; position: fixed; inset: 0; z-index: 200;
+    background: rgba(0,0,0,0.95); align-items: center; justify-content: center;
+    flex-direction: column;
+  }
+  .player-modal.open { display: flex; }
+
+  .player-container {
+    width: 90vw; max-width: 1000px; position: relative;
+  }
+
+  .player-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  .player-title { font-family: 'Bebas Neue', cursive; font-size: 1.5rem; color: var(--text); }
+  .close-btn {
+    background: var(--bg2); border: 1px solid var(--border); color: var(--muted);
+    width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+    font-size: 1.2rem; display: flex; align-items: center; justify-content: center;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .close-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  .video-wrapper {
+    position: relative; padding-bottom: 56.25%; height: 0; border-radius: 12px; overflow: hidden;
+    background: #000; border: 1px solid var(--border);
+  }
+  .video-wrapper iframe {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  }
+
+  .ep-picker {
+    display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;
+  }
+  .ep-btn {
+    background: var(--bg2); border: 1px solid var(--border); color: var(--muted);
+    padding: 0.35rem 0.8rem; border-radius: 6px; cursor: pointer;
+    font-size: 0.8rem; font-family: 'DM Sans', sans-serif; transition: all 0.2s;
+  }
+  .ep-btn:hover, .ep-btn.active {
+    background: var(--accent); border-color: var(--accent); color: #fff;
+  }
+
+  /* FOOTER */
+  footer {
+    margin-top: 3rem; padding: 2rem 3rem; background: var(--bg2);
+    border-top: 1px solid var(--border); text-align: center;
+    font-size: 0.82rem; color: var(--muted);
+  }
+  footer span { color: var(--accent); }
+
+  /* SVG ICONS */
+  .icon-play { display: inline-block; width: 0; height: 0;
+    border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+    border-left: 14px solid #fff; margin-left: 3px; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="goHome()">ANI<span>STREAM</span></div>
+  <ul class="nav-links">
+    <li><a href="#" class="active">Beranda</a></li>
+    <li><a href="#">Jadwal</a></li>
+    <li><a href="#">Genre</a></li>
+    <li><a href="#">Film</a></li>
+    <li><a href="#">Favorit</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Cari anime..." id="searchInput" oninput="handleSearch(this.value)">
+    </div>
+    <button class="btn-login">Masuk</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-slides" id="heroSlides"></div>
+  <div class="hero-content" id="heroContent"></div>
+  <div class="hero-dots" id="heroDots"></div>
+</section>
+
+<!-- GENRES -->
+<section class="section">
+  <div class="section-header">
+    <h2 class="section-title">Jelajahi <span>Genre</span></h2>
+  </div>
+  <div class="genres-row" id="genresRow"></div>
+</section>
+
+<!-- TERBARU -->
+<section class="section" style="padding-top:0">
+  <div class="section-header">
+    <h2 class="section-title">Episode <span>Terbaru</span></h2>
+    <a class="see-all">Lihat Semua →</a>
+  </div>
+  <div class="cards-row" id="latestRow"></div>
+</section>
+
+<!-- POPULER -->
+<section class="section" style="padding-top:0">
+  <div class="section-header">
+    <h2 class="section-title">Sedang <span>Populer</span></h2>
+    <a class="see-all">Lihat Semua →</a>
+  </div>
+  <div class="cards-row" id="popularRow"></div>
+</section>
+
+<!-- TOP & ONGOING -->
+<section class="section" style="padding-top:0">
+  <div class="top-grid">
+    <div>
+      <div class="section-header"><h2 class="section-title">Top <span>Rating</span></h2></div>
+      <div class="top-list" id="topRating"></div>
+    </div>
+    <div>
+      <div class="section-header"><h2 class="section-title">Sedang <span>Tayang</span></h2></div>
+      <div class="top-list" id="topOngoing"></div>
+    </div>
+  </div>
+</section>
+
+<!-- PLAYER MODAL -->
+<div class="player-modal" id="playerModal">
+  <div class="player-container">
+    <div class="player-header">
+      <div class="player-title" id="playerTitle">Judul Anime</div>
+      <button class="close-btn" onclick="closePlayer()">✕</button>
+    </div>
+    <div class="video-wrapper">
+      <iframe id="videoFrame" src="" allowfullscreen frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+    </div>
+    <div class="ep-picker" id="epPicker"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  &copy; 2025 <span>AniStream</span> · Nonton anime subtitle Indonesia gratis · Semua hak dilindungi
+</footer>
+
+<script>
+const ANIME_DB = [
+  {
+    id: 1, title: "Demon Slayer", subtitle: "Kimetsu no Yaiba",
+    rating: 9.2, genre: ["Action","Dark Fantasy"],
+    episodes: 26, status: "Tamat", year: 2019,
+    thumb: "https://cdn.myanimelist.net/images/anime/1286/99889.jpg",
+    hero: "https://cdn.myanimelist.net/images/anime/1286/99889l.jpg",
+    desc: "Tanjiro Kamado menjadi pemburu iblis setelah keluarganya dibantai dan adiknya berubah menjadi iblis. Sebuah petualangan epik penuh pertarungan dan emosi yang mendalam.",
+    youtubeId: "VQGCKyvzIM4"
+  },
+  {
+    id: 2, title: "Attack on Titan", subtitle: "Shingeki no Kyojin",
+    rating: 9.0, genre: ["Action","Drama"],
+    episodes: 75, status: "Tamat", year: 2013,
+    thumb: "https://cdn.myanimelist.net/images/anime/10/47347.jpg",
+    hero: "https://cdn.myanimelist.net/images/anime/10/47347l.jpg",
+    desc: "Dalam dunia yang dikepung raksasa pemangsa manusia, Eren Yeager bertekad memusnahkan mereka setelah ibunya dimangsa. Kisah penuh pengkhianatan dan kebenaran pahit.",
+    youtubeId: "MGRm4IzK1SQ"
+  },
+  {
+    id: 3, title: "Jujutsu Kaisen", subtitle: "呪術廻戦",
+    rating: 8.9, genre: ["Action","Supernatural"],
+    episodes: 24, status: "Ongoing", year: 2020,
+    thumb: "https://cdn.myanimelist.net/images/anime/1171/109222.jpg",
+    hero: "https://cdn.myanimelist.net/images/anime/1171/109222l.jpg",
+    desc: "Yuji Itadori menelan jimat kutukan kuat dan bergabung dengan organisasi rahasia untuk melawan roh kutukan dan menjalani eksekusinya.",
+    youtubeId: "pkKu9hLT-t8"
+  },
+  {
+    id: 4, title: "One Piece", subtitle: "ワンピース",
+    rating: 8.8, genre: ["Adventure","Comedy"],
+    episodes: 1000, status: "Ongoing", year: 1999,
+    thumb: "https://cdn.myanimelist.net/images/anime/6/73245.jpg",
+    hero: "https://cdn.myanimelist.net/images/anime/6/73245l.jpg",
+    desc: "Monkey D. Luffy dan kawan-kawannya menjelajahi Grand Line untuk mencari harta karun legendaris One Piece demi menjadi Raja Bajak Laut.",
+    youtubeId: "S8_YwFLCh4U"
+  },
+  {
+    id: 5, title: "Fullmetal Alchemist: Brotherhood", subtitle: "鋼の錬金術師",
+    rating: 9.4, genre: ["Action","Adventure"],
+    episodes: 64, status: "Tamat", year: 2009,
+    thumb: "https://cdn.myanimelist.net/images/anime/1223/96541.jpg",
+    hero: "https://cdn.myanimelist.net/images/anime/1223/96541l.jpg",
+    desc: "Dua bersaudara alchemist mencari Philosopher's Stone untuk memulihkan tubuh mereka yang hilang setelah ritual alkimia yang terlarang.",
+    youtubeId: "--IcmZkvL0Q"
+  },
+  {
+    id: 6, title: "Naruto Shippuden", subtitle: "ナルト 疾風伝",
+    rating: 8.7, genre: ["Action","Adventure"],
+    episodes: 500, status: "Tamat", year: 2007,
+    thumb: "https://cdn.myanimelist.net/images/anime/1565/111305.jpg",
+    hero: "https://cdn.myanimelist.net/images/anime/1565/111305l.jpg",
+    desc: "Naruto Uzumaki bertekad menjadi Hokage terkuat sambil membawa kembali temannya Sasuke yang telah tersesat ke jalan kegelapan.",
+    youtubeId: "Yo8dJRjl6oc"
+  },
+  {
+    id: 7, title: "Hunter x Hunter", subtitle: "ハンター×ハンター",
+    rating: 9.1, genre: ["Action","Adventure"],
+    episodes: 148, status: "Tamat", year: 2011,
+    thumb: "https://cdn.myanimelist.net/images/anime/11/33657.jpg",
+    hero: "https://cdn.myanimelist.net/images/anime/11/33657l.jpg",
+    desc: "Gon Freecss berangkat menjadi Hunter demi menemukan ayahnya, dan di perjalanan itu ia menemukan dunia yang jauh lebih gelap dari perkiraannya.",
+    youtubeId: "D4ENTulpIf8"
+  },
+  {
+    id: 8, title: "Spy x Family", subtitle: "スパイファミリー",
+    rating: 8.5, genre: ["Comedy","Action"],
+    episodes: 25, status: "Ongoing", year: 2022,
+    thumb: "https://cdn.myanimelist.net/images/anime/1441/122795.jpg",
+    hero: "https://cdn.myanimelist.net/images/anime/1441/122795l.jpg",
+    desc: "Seorang agen rahasia harus membangun keluarga palsu untuk menyelesaikan misinya — tanpa mengetahui bahwa anak angkatnya bisa membaca pikiran.",
+    youtubeId: "1eqcuN7TIQM"
+  },
+  {
+    id: 9, title: "Bleach: TYBW", subtitle: "千年血戦篇",
+    rating: 9.0, genre: ["Action","Supernatural"],
+    episodes: 52, status: "Ongoing", year: 2022,
+    thumb: "https://cdn.myanimelist.net/images/anime/1764/126627.jpg",
+    hero: "https://cdn.myanimelist.net/images/anime/1764/126627l.jpg",
+    desc: "Arc terakhir Bleach. Soul Society diserang oleh Quincy Sternritter yang dipimpin Yhwach, dan Ichigo harus mengungkap kebenaran tentang dirinya.",
+    youtubeId: "gsFD2gCQ78M"
+  },
+  {
+    id: 10, title: "Dragon Ball Super", subtitle: "ドラゴンボール超",
+    rating: 8.2, genre: ["Action","Comedy"],
+    episodes: 131, status: "Tamat", year: 2015,
+    thumb: "https://cdn.myanimelist.net/images/anime/7/74606.jpg",
+    hero: "https://cdn.myanimelist.net/images/anime/7/74606l.jpg",
+    desc: "Goku menghadapi ancaman-ancaman baru dari alam semesta lain, termasuk dewa-dewa penghancur dan petarung terkuat dari multiversum.",
+    youtubeId: "lz_OqU9r0Gs"
+  }
+];
+
+const GENRES = ["Semua","Action","Adventure","Comedy","Drama","Fantasy","Horror","Romance","Sci-Fi","Slice of Life","Supernatural","Dark Fantasy"];
+const HEROES = [0, 2, 4, 6, 8];
+
+let currentHero = 0;
+let heroTimer;
+let currentEp = 1;
+let searchTimeout;
+
+// HERO
+function buildHero() {
+  const slides = document.getElementById('heroSlides');
+  const content = document.getElementById('heroContent');
+  const dots = document.getElementById('heroDots');
+
+  slides.innerHTML = HEROES.map((idx, i) => {
+    const a = ANIME_DB[idx];
+    return `<div class="hero-slide ${i===0?'active':''}" id="slide${i}">
+      <img src="${a.hero||a.thumb}" alt="${a.title}" onerror="this.src='${a.thumb}'">
+      <div class="hero-gradient"></div>
+    </div>`;
+  }).join('');
+
+  dots.innerHTML = HEROES.map((_,i) =>
+    `<div class="dot ${i===0?'active':''}" onclick="setHero(${i})"></div>`
+  ).join('');
+
+  renderHeroContent(0);
+  startHeroTimer();
+}
+
+function renderHeroContent(i) {
+  const a = ANIME_DB[HEROES[i]];
+  const content = document.getElementById('heroContent');
+  content.innerHTML = `
+    <div class="hero-badge">▶ Trending #${i+1}</div>
+    <h1 class="hero-title">${a.title}</h1>
+    <div class="hero-meta">
+      <span class="hero-rating">★ ${a.rating}</span>
+      <span>${a.year}</span>
+      <span>${a.episodes} Episode</span>
+      <span>${a.genre.join(' · ')}</span>
+    </div>
+    <p class="hero-desc">${a.desc}</p>
+    <div class="hero-buttons">
+      <button class="btn-play" onclick="openPlayer(${a.id})">
+        <span class="icon-play"></span> Tonton Sekarang
+      </button>
+      <button class="btn-info" onclick="showInfo(${a.id})">ℹ Info</button>
+    </div>`;
+}
+
+function setHero(i) {
+  document.querySelectorAll('.hero-slide').forEach((s,j) => s.classList.toggle('active', j===i));
+  document.querySelectorAll('.dot').forEach((d,j) => d.classList.toggle('active', j===i));
+  currentHero = i;
+  renderHeroContent(i);
+}
+
+function startHeroTimer() {
+  heroTimer = setInterval(() => {
+    const next = (currentHero + 1) % HEROES.length;
+    setHero(next);
+  }, 5000);
+}
+
+// GENRES
+function buildGenres() {
+  const row = document.getElementById('genresRow');
+  row.innerHTML = GENRES.map((g, i) =>
+    `<div class="genre-chip ${i===0?'active':''}" onclick="filterGenre('${g}', this)">${g}</div>`
+  ).join('');
+}
+
+function filterGenre(genre, el) {
+  document.querySelectorAll('.genre-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  const filtered = genre === 'Semua' ? ANIME_DB : ANIME_DB.filter(a => a.genre.includes(genre));
+  renderCards('latestRow', filtered, 'new');
+  renderCards('popularRow', filtered.slice().sort((a,b)=>b.rating-a.rating), 'ep');
+}
+
+// CARDS
+function renderCards(containerId, list, badgeType) {
+  const row = document.getElementById(containerId);
+  row.innerHTML = list.slice(0,10).map(a => `
+    <div class="anime-card" onclick="openPlayer(${a.id})">
+      <img src="${a.thumb}" alt="${a.title}" loading="lazy" onerror="this.style.background='#1a1a2e'">
+      <div class="card-overlay"></div>
+      <div class="play-btn"><span class="icon-play" style="border-left-color:#fff"></span></div>
+      <div class="card-badge ${badgeType}">${badgeType === 'new' ? 'BARU' : 'EP '+a.episodes}</div>
+      <div class="card-info">
+        <div class="card-title">${a.title}</div>
+        <div class="card-sub">
+          <span>${a.genre[0]}</span>
+          <span class="card-rating">★ ${a.rating}</span>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+// TOP LISTS
+function buildTopLists() {
+  const topRating = ANIME_DB.slice().sort((a,b) => b.rating - a.rating).slice(0,5);
+  const topOngoing = ANIME_DB.filter(a => a.status === 'Ongoing').slice(0,5);
+
+  const renderList = (id, list) => {
+    document.getElementById(id).innerHTML = list.map((a,i) => `
+      <div class="top-item" onclick="openPlayer(${a.id})">
+        <div class="top-rank">${String(i+1).padStart(2,'0')}</div>
+        <img class="top-thumb" src="${a.thumb}" alt="${a.title}" loading="lazy">
+        <div class="top-details">
+          <div class="top-title">${a.title}</div>
+          <div class="top-meta">★ ${a.rating} · ${a.genre[0]} · ${a.episodes} eps</div>
+        </div>
+      </div>`).join('');
+  };
+
+  renderList('topRating', topRating);
+  renderList('topOngoing', topOngoing);
+}
+
+// PLAYER
+function openPlayer(id) {
+  const anime = ANIME_DB.find(a => a.id === id);
+  if (!anime) return;
+  clearInterval(heroTimer);
+
+  document.getElementById('playerTitle').textContent = anime.title + ' – Episode 1';
+  document.getElementById('videoFrame').src = `https://www.youtube.com/embed/${anime.youtubeId}?autoplay=1&rel=0`;
+
+  const eps = Math.min(anime.episodes, 24);
+  const picker = document.getElementById('epPicker');
+  picker.innerHTML = '';
+  for (let i=1; i<=eps; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'ep-btn' + (i===1?' active':'');
+    btn.textContent = `EP ${i}`;
+    btn.onclick = (function(ep, anime2) {
+      return function() {
+        document.querySelectorAll('.ep-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        document.getElementById('playerTitle').textContent = anime2.title + ' – Episode ' + ep;
+        document.getElementById('videoFrame').src = `https://www.youtube.com/embed/${anime2.youtubeId}?autoplay=1&rel=0&t=${ep*60}`;
+      };
+    })(i, anime);
+    picker.appendChild(btn);
+  }
+
+  document.getElementById('playerModal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePlayer() {
+  document.getElementById('playerModal').classList.remove('open');
+  document.getElementById('videoFrame').src = '';
+  document.body.style.overflow = '';
+  startHeroTimer();
+}
+
+function showInfo(id) {
+  const a = ANIME_DB.find(x => x.id === id);
+  if (!a) return;
+  alert(`📺 ${a.title}\n\n${a.desc}\n\n• Rating: ${a.rating}/10\n• Tahun: ${a.year}\n• Episode: ${a.episodes}\n• Status: ${a.status}\n• Genre: ${a.genre.join(', ')}`);
+}
+
+function goHome() {
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+// SEARCH
+function handleSearch(q) {
+  clearTimeout(searchTimeout);
+  if (!q.trim()) {
+    renderCards('latestRow', ANIME_DB, 'new');
+    renderCards('popularRow', ANIME_DB.slice().sort((a,b)=>b.rating-a.rating), 'ep');
+    return;
+  }
+  searchTimeout = setTimeout(() => {
+    const lower = q.toLowerCase();
+    const results = ANIME_DB.filter(a =>
+      a.title.toLowerCase().includes(lower) || a.subtitle.toLowerCase().includes(lower) ||
+      a.genre.some(g => g.toLowerCase().includes(lower))
+    );
+    renderCards('latestRow', results, 'new');
+    renderCards('popularRow', results, 'ep');
+    window.scrollTo({top: 300, behavior: 'smooth'});
+  }, 350);
+}
+
+// Close modal on outside click
+document.getElementById('playerModal').addEventListener('click', function(e) {
+  if (e.target === this) closePlayer();
+});
+
+// ESC to close
+document.addEventListener('keydown', e => { if (e.key==='Escape') closePlayer(); });
+
+// INIT
+buildHero();
+buildGenres();
+renderCards('latestRow', ANIME_DB, 'new');
+renderCards('popularRow', ANIME_DB.slice().sort((a,b)=>b.rating-a.rating), 'ep');
+buildTopLists();
+</script>
+</body>
+</html>
